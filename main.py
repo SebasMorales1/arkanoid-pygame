@@ -35,7 +35,7 @@ class Player(Collision_with_bordersTrait):
 class Ball(Collision_with_bordersTrait):
     def __init__(self, pos, width, sticked):
         self.color = (255, 255, 255)
-        self.speed = 10 
+        self.speed = 7
         self.state = 0 # State = 0: sticky 1: in movement
         self.width = width
         self.xdirection = 0
@@ -50,6 +50,7 @@ class Ball(Collision_with_bordersTrait):
         if self.state == 0:
             self.pos[0] = player_pos[0] + self.sticked
         elif self.state == 1:
+            self.pos[0] += (self.speed-1)*self.xdirection
             self.pos[1] += self.speed*self.ydirection
 
     def check_collision(self, screen_size):
@@ -70,13 +71,19 @@ class Ball(Collision_with_bordersTrait):
         yball_area = (self.pos[1], self.pos[1]+self.width)
         collisioned_x = xball_area[0] >= xplayer_area[0] and xball_area[1] <= xplayer_area[1]
         collisioned_y = yball_area[1] >= yplayer_area[0]-self.width and yball_area[0] <= yplayer_area[0]
+        collisioned_only_x = collisioned_x and yball_area[0] < yplayer_area[1] and yball_area[1] > yplayer_area[0]
+
+        center = player_width//2+player_pos[0]
+        collision_side = 1 if self.pos[0] > center else -1 if self.pos[0] < center else 0
 
         if collisioned_x and collisioned_y and self.state != 0:
-            print("The ball collisions with player")
-            print(f"player area: x={xplayer_area} y={yplayer_area}")
-            print(f"ball area: x={xball_area} y={yball_area}")
-            # self.pos[1] = yplayer_area[0]-self.width
             self.ydirection = -1
+            if self.xdirection == 0 and collision_side != 0:
+                self.xdirection = collision_side
+        elif collisioned_only_x:
+            self.pos[0] += collision_side
+            self.xdirection = collision_side
+            self.xangle += 10*collision_side
 
 # Configs
 SCREEN_SIZE = (420, 580)
@@ -107,8 +114,9 @@ def main():
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == 32:
-                    ball.ydirection = -1
-                    ball.state = 1
+                    if ball.state == 0:
+                        ball.ydirection = -1
+                        ball.state = 1
 
         keys = pygame.key.get_pressed()
         player.movement(keys)
