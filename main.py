@@ -83,7 +83,6 @@ class Ball(Collision_with_bordersTrait):
         elif collisioned_only_x:
             self.pos[0] += collision_side
             self.xdirection = collision_side
-            self.xangle += 10*collision_side
 
 # Configs
 SCREEN_SIZE = (420, 580)
