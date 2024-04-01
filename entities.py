@@ -25,7 +25,7 @@ class Player:
 class Ball:
     def __init__(self, pos, radius, sticked):
         self.color = (255, 255, 255)
-        self.speed = 3
+        self.speed = 7
         self.state = 0 # State = 0: sticky 1: in movement
         self.radius = radius
         self.xdirection = 0
