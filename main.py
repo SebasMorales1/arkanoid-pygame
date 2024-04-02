@@ -16,6 +16,7 @@ BALL_INITIAL_POS = (PLAYER_INITIAL_POS[0]+BALL_INITIAL_STICKED, PLAYER_INITIAL_P
 WHITE = (255, 255, 255)
 GRAY1 = (212, 212, 212)
 AQUA = (171, 245, 245)
+PAUSED_BG = (0, 0, 0, 40)
 
 def main():
     pygame.init()
@@ -24,6 +25,7 @@ def main():
 
     running = True
     gameover = False
+    paused = False
     
     player = Player(list(PLAYER_INITIAL_POS), PLAYER_WIDTH)
     ball = Ball(list(BALL_INITIAL_POS), BALL_RADIUS, BALL_INITIAL_STICKED)
@@ -39,8 +41,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             if event.type == pygame.KEYDOWN:
-                if event.key == 32:
+                if event.key == pygame.K_ESCAPE and not gameover: paused = True
+                elif event.key == 32:
                     if ball.state == 0:
                         ball.ydirection = -1
                         ball.state = 1
@@ -56,7 +60,9 @@ def main():
                         ball.ydirection = 0
 
                         continue
-
+                    elif paused: paused = False
+                        
+        # Gameover window
         if ball.pos[1] > SCREEN_SIZE[1]:
             gameover = True
 
@@ -73,18 +79,28 @@ def main():
 
             pygame.display.flip()
             continue
+        elif not paused:
+            keys = pygame.key.get_pressed()
+            player.movement(keys)
+            player.check_collision(SCREEN_SIZE[0])
 
-        keys = pygame.key.get_pressed()
-        player.movement(keys)
-        player.check_collision(SCREEN_SIZE[0])
-
-        ball.movement(player.pos)
-        ball.check_collision_with_player(player.pos, player.width)
-        ball.check_collision(SCREEN_SIZE[0])
+            ball.movement(player.pos)
+            ball.check_collision_with_player(player.pos, player.width)
+            ball.check_collision(SCREEN_SIZE[0])
 
         screen.fill(BG_COLOR)
         player.draw(screen)
         ball.draw(screen)
+        if paused:
+            surface = pygame.Surface(SCREEN_SIZE, pygame.SRCALPHA)
+            surface.fill(PAUSED_BG)
+
+            pause_text = font.render("PAUSED", True, WHITE)
+            play_text = font2.render(f"<space> Continue", True, AQUA)
+
+            screen.blit(surface, (0,0))
+            screen.blit(pause_text, (SCREEN_SIZE[0]//2 - pause_text.get_width()//2, 80))
+            screen.blit(play_text, (SCREEN_SIZE[0]//2 - play_text.get_width()//2, SCREEN_SIZE[1]-100))
         pygame.display.flip()
 
 if __name__ == "__main__":
